@@ -265,7 +265,7 @@ class Goalies extends HockeyPlayer{
 		roster = new ArrayList<HockeyPlayer>();
 		roster.add(new HockeyPlayer("Holtby", "Goalie", "Canada", 1648, 153, 1495));
 		roster.add(new HockeyPlayer("Grubauer", "Goalie", "Germany", 953, 73, 880));
-		roster.add(new HockeyPlayer("TEST", "Goalie", "USA", 200, 120, 2000));
+		//roster.add(new HockeyPlayer("TEST", "Goalie", "USA", 200, 120, 2000));
 	}
 	
 	public void setRosterSorted(){
@@ -601,44 +601,47 @@ class Forward extends Skaters{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-abstract class Output{
-	//gives user option of displaying/sorting/querying stats
-	public static int statsWizard(){
-		final String [] OPTIONS = {"Display Roster", "Sort Stats", "Query Players"};
-		System.out.println("\n**********************************************************************************");
-		System.out.println("WELCOME TO 2017-2018 WASHINGTON CAPITALS' (SOME) REGULAR SEASON STATS WIZARD!");
-		System.out.println("\nSelect an option: ");
-		for(int i = 0; i < OPTIONS.length; i++){
-			System.out.println((i+1) + "). " + OPTIONS[i]);	
-		}
-		System.out.println("\n" + (OPTIONS.length + 1) + "). " + "Exit");
-		System.out.println("\n*********************************************");
-		
-		try{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			System.out.print("Enter selection: ");
-			int userChoice = Integer.parseInt(reader.readLine());	
-			if(userChoice < (OPTIONS.length + 1)){
-				System.out.println("  You selected:  " + OPTIONS[userChoice - 1]);
-				return userChoice;
-			}
-			else if(userChoice == (OPTIONS.length + 1)){
-				System.out.print("  You selected: EXIT");
-				System.exit(0);
-			}
-			else{
-				Output.statsWizard(); //reload menu bc invalid selection	
-			}
-		}
-		catch(Exception e){
-			System.out.println("oh noz, there is an Exception: " + e + "\nTry again!");
-			statsWizard();
-		}
-		return 1;
+class Output{
+	//fields
+	private BufferedReader reader;
+	
+	//constuctor
+	public Output(){
+		reader = new BufferedReader(new InputStreamReader(System.in));	
 	}
 	
-	public static void mainMenu(){
-		int choice = statsWizard();
+	//setter
+	public void setReader(){
+		reader = new BufferedReader(new InputStreamReader(System.in));		
+	}
+	
+	//getter
+	public BufferedReader getReader(){
+		return reader;
+	}	
+	
+	public int userChoice(){
+		int userChoice = 0;
+		try{
+			System.out.print("Enter selection: ");
+			userChoice = Integer.parseInt(reader.readLine());	
+		}
+		catch(Exception e){
+			System.out.println("Exception in userChoice method: " + e + "\nTry again!");
+			userChoice();
+		}
+		return userChoice;
+	}
+	
+	public static void mainTitle(){
+		System.out.println("\n**********************************************************************************");
+		System.out.println("WELCOME TO 2017-2018 WASHINGTON CAPITALS' (SOME) REGULAR SEASON STATS WIZARD!");
+	}
+	
+	public void mainMenu(){
+		mainTitle();
+		Output output = new Output();
+		int choice = output.userOptions("Display Roster", "Sort Stats", "Query Players");
 		if(choice == 1){
 			Display display = new Display();
 			display.printRosterDetails();
@@ -655,18 +658,40 @@ abstract class Output{
 		}
 	}
 	
-	public static void printSkaterStats(HockeyPlayer skater){
+	public void printSkaterStats(HockeyPlayer skater){
 		System.out.println("Position: " + skater.getPosition() + "\tGoals: " + skater.getStats()[0] + "\tAssists: " + skater.getStats()[1] + "\tPoints: " + skater.getStats()[2] + "\t+/-: " + skater.getStats()[3] + "\t\tName: " + skater.getLastName());	
 	}
 	
-	public static void printGoalieStats(HockeyPlayer goalie){
+	public void printGoalieStats(HockeyPlayer goalie){
 		System.out.println("Position: " + goalie.getPosition() + "\tShots Against: " + goalie.getStats()[0] + "\tGoals Against: " + goalie.getStats()[1] + "\tSaves: " + goalie.getStats()[2] + "\t\tName: " + goalie.getLastName());	
+	}
+	
+	//method to determine which option (from given options), user selects
+	public int userOptions(String... OPTIONS){
+		int userChc = 0;
+		System.out.println("\n**********************************************************************************");
+		System.out.println("\nSelect an option: ");
+		for(int i = 0; i < OPTIONS.length; i++){
+			System.out.println((i+1) + "). " + OPTIONS[i]);	
+		}
+		System.out.println("\n" + (OPTIONS.length + 1) + "). " + "Exit");
+		System.out.println("\n*********************************************");
+		userChc = userChoice();
+			if(userChc < (OPTIONS.length + 1)){
+				System.out.println("  You selected:  " + OPTIONS[userChc - 1]);
+				return userChc;
+			}
+			else if(userChc == (OPTIONS.length + 1)){
+				System.out.print("  You selected: EXIT");
+				System.exit(0);
+			}
+		return 1;
 	}
 	
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class Display{
+class Display extends Output{
 	//field
 	HockeyPlayer hp;
 	
@@ -693,10 +718,10 @@ class Display{
 	public void printRoster(){
 		for(HockeyPlayer player : hp.getRoster()){
 			if(player.getStats().length == 5){
-				Output.printSkaterStats(player);	
+				printSkaterStats(player);	
 			}
 			else{
-				Output.printGoalieStats(player);
+				printGoalieStats(player);
 			}
 		}
 	}
@@ -707,12 +732,12 @@ class Display{
 		System.out.println("THE 2017-2018 REGULAR SEASON ROSTER AND SOME OF THEIR STATS:\n");
 		Display display = new Display();
 		display.printRoster();
-		Output.mainMenu();
+		mainMenu();
 	}	
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class Sort{
+class Sort extends Output{
 	//fields
 	private int userMin;
 	private int userMax;
@@ -762,7 +787,7 @@ class Sort{
 			System.out.println("\nCAPS " + type.toUpperCase()+ " with " + userMin + " <= " + stat + " <= " + userMax + " are:");
 		}
 		catch(Exception e){
-			System.out.println("oh noz, there is an Exception in showGetMinMax() method: " + e + "\nTry again!");
+			System.out.println("Exception in showGetMinMax() method: " + e + "\nTry again!");
 			showGetMinMax(type, stat, statMin, statMax);
 		}
 	}
@@ -773,19 +798,19 @@ class Sort{
 			switch(userChoice){
 				case 1: if(g.getStats()[0] >= userMin){
 					if(g.getStats()[0] <= userMax){
-						Output.printGoalieStats(g);	
+						printGoalieStats(g);	
 					}
 					}
 					break;
 				case 2: if(g.getStats()[1] >= userMin){
 					if(g.getStats()[1] <= userMax){
-						Output.printGoalieStats(g);						
+						printGoalieStats(g);						
 					}
 					}
 					break;
 				case 3:  if(g.getStats()[2] >= userMin){
 					if(g.getStats()[2] <= userMax){
-						Output.printGoalieStats(g);	
+						printGoalieStats(g);	
 					}
 					}
 					break;	
@@ -799,25 +824,25 @@ class Sort{
 			switch(userChoice){
 				case 1: if(s.getStats()[0] >= userMin){
 					if(s.getStats()[0] <= userMax){
-						Output.printSkaterStats(s);	
+						printSkaterStats(s);	
 					}
 					}
 					break;
 				case 2: if(s.getStats()[1] >= userMin){
 					if(s.getStats()[1] <= userMax){
-						Output.printSkaterStats(s);	
+						printSkaterStats(s);	
 					}
 					}
 					break;
 				case 3:  if(s.getStats()[2] >= userMin){
 					if(s.getStats()[2] <= userMax){
-						Output.printSkaterStats(s);	
+						printSkaterStats(s);	
 					}
 					}
 					break;	
 				case 4:  if(s.getStats()[3] >= userMin){
 					if(s.getStats()[3] <= userMax){
-						Output.printSkaterStats(s);	
+						printSkaterStats(s);	
 					}
 					}
 					break;	
@@ -825,35 +850,6 @@ class Sort{
 		}
 	}
 
-	//method to determine which stats (from given options), user wishes to sort
-	public int sortWhat(String... OPTIONS){
-		System.out.println("\n**********************************************************************************");
-		System.out.println("\nSelect Stats to Sort: ");
-		for(int i = 0; i < OPTIONS.length; i++){
-			System.out.println((i+1) + "). " + OPTIONS[i]);	
-		}
-		System.out.println("\n" + (OPTIONS.length + 1) + "). " + "Exit");
-		System.out.println("\n*********************************************");
-		
-		try{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			System.out.print("Enter selection: ");
-			int userChoice = Integer.parseInt(reader.readLine());	
-			if(userChoice < (OPTIONS.length + 1)){
-				System.out.println("  You selected:  " + OPTIONS[userChoice - 1]);
-				return userChoice;
-			}
-			else if(userChoice == (OPTIONS.length + 1)){
-				System.out.print("  You selected: EXIT");
-				System.exit(0);
-			}
-		}
-		catch(Exception e){
-			System.out.println("oh noz, there is an Exception in sortWhat method: " + e + ".");
-		}
-		return 1;
-	}
-	
 	public void outputGoaliesSorted(){
 		Goalies goalies = new Goalies();
 		HockeyPlayer h = new HockeyPlayer(userChoice, goalies.getRoster());
@@ -876,24 +872,24 @@ class Sort{
 	
 	//a method that outputs a menu to select type of sorted stats to display on screen
 	public void userSortOptions(){
-		int sortGoalieOrSkater = sortWhat("Goalie", "Skater");
+		int sortGoalieOrSkater = userOptions("Goalie", "Skater");
 		if(sortGoalieOrSkater == 1){ 
-			userChoice = sortWhat("Shots Against", "Goals Against", "Saves");
+			userChoice = userOptions("Shots Against", "Goals Against", "Saves");
 			outputGoaliesSorted();
 		}
 		else{ 
-			userChoice = sortWhat("Goals", "Assists", "Points", "+/-");
+			userChoice = userOptions("Goals", "Assists", "Points", "+/-");
 			outputSkatersSorted();
 		}
-		Output.mainMenu();
+		mainMenu();
 	}
 	
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class Query{
-	//field
-	HockeyPlayer hp;
+class Query extends Output{
+	//fields
+	private HockeyPlayer hp;
 	
 	//no-argument constructor
 	public Query(){
@@ -906,42 +902,52 @@ class Query{
 		hp.setRosterBP();
 	}
 	
-	//method to display to user available query options
-	public static ArrayList<String> queryOptions(String... options){
-		ArrayList<String> queryOpts = new ArrayList<String>(Arrays.asList(options));
-		System.out.println("Select from these options: ");
-		for(int i = 0; i< queryOpts.size(); i++){
-			System.out.println((i+1) + "). " + queryOpts.get(i));	
-		}
-		return queryOpts;
+	//setters
+	public void setHP(HockeyPlayer hp){
+		this.hp = hp;	
+	}
+	
+	//getters
+	public HockeyPlayer getHP(){
+		return hp;	
 	}
 	
 	//method to display birthplace query of players by country
-	public void outputQueryBP(String country){
+	public void outputQueryBP(int country){
+		String [] bpOpts = hp.getRosterBP().toArray(new String[0]);
 		System.out.println("\n***********************************************************************");
-		System.out.println("RESULTS:\nPlayers born in " + country + " are:");	
+		System.out.println("RESULTS:\nPlayers born in " + bpOpts[country] + " are:");	
 		int counter = 0;
 		for(HockeyPlayer player : hp.getRoster()){
-			if(player.getBirthplace() == country ){
+			if(player.getBirthplace() == bpOpts[country] ){
 				System.out.println("\t" + player.getLastName());	
 				counter++;
 			}
 		}
-		System.out.println("\nTOTAL: " + counter + " players were born in " + country + ".");
+		System.out.println("\nTOTAL: " + counter + " players were born in " + bpOpts[country] + ".");
 		System.out.println("***********************************************************************");
 	}
 	
+	//method to display position type query of forwards (all/lw/c/rw), defense, goalies
+	public void outputQueryPositionType(int position, String... posOpts){
+		System.out.println("\n***********************************************************************");
+		System.out.println("RESULTS:\n" + posOpts[position] + " are:");
+		int counter = 0;
+			for(HockeyPlayer player : hp.getRoster()){
+				if(player.getPosition().contains(posOpts[position])){
+					System.out.println("\t" + player.getLastName());	
+					counter++;
+				}
+			}
+		System.out.println("\nTOTAL: " + counter + " " + posOpts[position] + ". ");
+		System.out.println("***********************************************************************");
+	}
+
 	//method to display shoots query of skaters by left or right
 	public void outputQueryShoots(int leftOrRight){
-		String leftRT = "";
-		if(leftOrRight == 0){
-			leftRT = "Right";
-		}
-		else{
-			leftRT = "Left";	
-		}
+		String [] LROpts = {"Right", "Left"};
 		System.out.println("\n***********************************************************************");
-		System.out.println("RESULTS:\nSkaters who shoot " + leftRT + " are:");
+		System.out.println("RESULTS:\nSkaters who shoot " + LROpts[leftOrRight] + " are:");
 		int counter = 0;
 		for(HockeyPlayer player : hp.getRoster()){
 			if(player.getStats().length == 5){
@@ -951,93 +957,49 @@ class Query{
 				}
 			}
 		}
-		System.out.println("\nTOTAL: " + counter + " skaters shoot " + leftRT + ".");
-		System.out.println("***********************************************************************");
-	}
-	
-	//method to display position type query of forwards (all/lw/c/rw), defense, goalies
-	public void outputQueryPositionType(String position){
-		System.out.println("\n***********************************************************************");
-		System.out.println("RESULTS:\n" + position + " are:");
-		int counter = 0;
-			for(HockeyPlayer player : hp.getRoster()){
-				if(player.getPosition().contains(position)){
-					System.out.println("\t" + player.getLastName());	
-					counter++;
-				}
-			}
-		System.out.println("\nTOTAL: " + counter + " " + position + ". ");
+		System.out.println("\nTOTAL: " + counter + " skaters shoot " + LROpts[leftOrRight] + ".");
 		System.out.println("***********************************************************************");
 	}
 
-	//a method that outputs a menu to select which queried detail to display on screen
 	public void userQueryOptions(){
-		System.out.println();
-		System.out.println("**********************************************************************************");
-		System.out.println("\nSelect a detail to query:\n1.) Birthplace \n2.) Shoots \n3.) Position\n\n4.) Exit");
-		System.out.println("\n*********************************************");
+		int userChc = userOptions("Birthplace", "Shoots", "Position");	
 		Query query = new Query();
-		try{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			System.out.print("Enter selection: ");
-			int userChoice = Integer.parseInt(reader.readLine()); /////////////////
-			System.out.println();
-				switch(userChoice){
-					case 1: String [] bpOpts = hp.getRosterBP().toArray(new String[0]);
-						System.out.println("  You selected: Query Player Birthplace");
-						ArrayList<String> bp = queryOptions(bpOpts);
-						System.out.print("Enter selection:  ");
-						int userBPSelection = Integer.parseInt(reader.readLine()); /////////////////
-						query.outputQueryBP(bp.get(userBPSelection-1));
+		switch(userChc){
+			case 1: String [] bpOpts = hp.getRosterBP().toArray(new String[0]);
+				userChc = userOptions(bpOpts);
+				query.outputQueryBP(userChc-1);
+				break;
+			case 2: userChc = userOptions("R", "L");
+				query.outputQueryShoots(userChc-1);
+				break;
+			case 3: userChc = userOptions("Fowards", "Defense", "Goalies");
+				switch(userChc){
+					case 1: userChc = userOptions("Forward", "Forward, LW", "Forward, C", "Forward, RW");
+						query.outputQueryPositionType(userChc-1, "Forward", "Forward, LW", "Forward, C", "Forward, RW");
 						break;
-					case 2: System.out.println("  You selected: Query Skater Shoots");
-						ArrayList<String> lr = queryOptions("R", "L");
-						System.out.print("Enter selection:  ");
-						int userShootsSelection = Integer.parseInt(reader.readLine()); /////////////////
-						query.outputQueryShoots(userShootsSelection - 1);
+					case 2: query.outputQueryPositionType(userChc-1, "Forward", "Defense", "Goalie");
 						break;
-					case 3: System.out.println("  You selected: Query Player Position");
-						System.out.println("  Coded Functionality Coming Soon");
-						
-						queryOptions("Fowards", "Defense", "Goalies");
-						System.out.print("Enter selection:  ");
-						int userPositionSelection = Integer.parseInt(reader.readLine());/////////////////
-						switch(userPositionSelection){
-							case 1: System.out.println("  You selected: Query Forwards");
-								ArrayList<String> alcr = queryOptions("Forward", "Forward, LW", "Forward, C", "Forward, RW");
-								System.out.print("Enter selection:  ");
-								int userForwardSelection = Integer.parseInt(reader.readLine());
-									query.outputQueryPositionType(alcr.get(userForwardSelection-1));
-								break;
-							case 2: query.outputQueryPositionType("Defense");
-								break;
-							case 3: query.outputQueryPositionType("Goalie");
-								break;
-							default: queryOptions("Fowards", "Defense", "Goalies"); //reload menu bc invalid selection
-							break;
-						} 
-						
+					case 3: query.outputQueryPositionType(userChc-1, "Forward", "Defense", "Goalie");
 						break;
-					case 4: System.out.print("  You selected: EXIT");
-						System.exit(0);
+					default: userOptions("Fowards", "Defense", "Goalies"); //reload menu bc invalid selection
 						break;
-					default: userQueryOptions(); //reload menu bc invalid selection
-						break;	
-				}
-				Output.mainMenu();
-		}
-		catch(Exception e){
-			System.out.println("oh noz, there is an Exception: " + e + "\nTry again!");
-			userQueryOptions();
+				} 
+				break;
+			case 4: System.out.print("  You selected: EXIT");
+				System.exit(0);
+				break;
+			default: userQueryOptions(); //reload menu bc invalid selection
+				break;	
 		}
 	}
-	
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 public class HockeyDataSetWizardV7{
 	//main method
 	public static void main(String... args){
-		Output.mainMenu();
+		Output output = new Output();
+		output.mainMenu();
 	}
 }
